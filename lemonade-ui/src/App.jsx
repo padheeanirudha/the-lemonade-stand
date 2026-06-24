@@ -1,40 +1,20 @@
-import React, { useState, useEffect } from 'react';
-// import { useQuery } from '@apollo/client/react/hooks/useQuery.js';
-import { useQuery, useMutation } from '@apollo/client/react'; // 👈 Direct React bundle entry point
-import { GET_PRODUCTS, CREATE_ORDER } from './graphql/queries';
-import CartRow from './components/CartRow';
+import React, { useState } from 'react';
+import CartRow from './components/CartRow.jsx';
+// Import the exact asset sliced from your design
+import logoAsset from './assets/logo.png'; 
 
+const INITIAL_CART = [
+  { variantId: '1', productName: 'Lemonade', sizeName: 'Regular', price: 1.00, quantity: 1 },
+  { variantId: '2', productName: 'Pink Lemonade', sizeName: 'Regular', price: 1.00, quantity: 1 },
+  { variantId: '3', productName: 'Lemonade', sizeName: 'Large', price: 1.50, quantity: 1 },
+  { variantId: '4', productName: 'Pink Lemonade', sizeName: 'Large', price: 1.50, quantity: 1 }
+];
 
 export default function App() {
-  const { loading, error, data } = useQuery(GET_PRODUCTS);
-  const [createOrder, { loading: submitting }] = useMutation(CREATE_ORDER);
-
-  const [cart, setCart] = useState([]);
-  const [customer, setCustomer] = useState({ name: '', contact: '' });
-  const [orderConfirmation, setOrderConfirmation] = useState(null);
-  const [validationError, setValidationError] = useState('');
-
-  // Hydrate cart rows once active menu choices return from database service
-  useEffect(() => {
-    if (data && data.products) {
-      const initialItems = [];
-      data.products.forEach(product => {
-        product.variants.forEach(variant => {
-          initialItems.push({
-            variantId: parseInt(variant.id),
-            productName: product.name,
-            sizeName: variant.sizeName,
-            price: variant.price,
-            quantity: 1 // Baseline mock default from Figma design state layout
-          });
-        });
-      });
-      setCart(initialItems);
-    }
-  }, [data]);
+  const [cart, setCart] = useState(INITIAL_CART);
 
   const handleUpdateQty = (variantId, newQty) => {
-    if (newQty < 0) return;
+    if (newQty < 1) return;
     setCart(prev => prev.map(item => 
       item.variantId === variantId ? { ...item, quantity: newQty } : item
     ));
@@ -44,143 +24,92 @@ export default function App() {
     setCart(prev => prev.filter(item => item.variantId !== variantId));
   };
 
-  const calculateTotal = () => {
-    return cart.reduce((sum, item) => sum + item.price * item.quantity, 0).toFixed(2);
-  };
-
-  const handleOrderSubmit = async (e) => {
-    e.preventDefault();
-    setValidationError('');
-
-    if (!customer.name.trim() || !customer.contact.trim()) {
-      setValidationError('Please supply your name and contact info to pick up your order.');
-      return;
-    }
-
-    const filteredItems = cart.filter(item => item.quantity > 0).map(item => ({
-      variantId: item.variantId,
-      quantity: item.quantity
-    }));
-
-    if (filteredItems.length === 0) {
-      setValidationError('Your shopping cart is currently empty.');
-      return;
-    }
-
-    try {
-      const response = await createOrder({
-        variables: {
-          input: {
-            customerName: customer.name,
-            customerContact: customer.contact,
-            items: filteredItems
-          }
-        }
-      });
-
-      const result = response.data.createOrder;
-      if (result.success) {
-        setOrderConfirmation(result.orderNumber);
-      } else {
-        setValidationError(result.message);
-      }
-    } catch (err) {
-      setValidationError('Failed to connect to the backend order submission service.');
-    }
-  };
-
-  if (loading) return <div style={{ padding: '40px', textAlign: 'center', fontFamily: 'sans-serif' }}>Hydrating virtual storefront from datastore...</div>;
-  if (error) return <div style={{ padding: '40px', textAlign: 'center', color: 'red', fontFamily: 'sans-serif' }}>Error connecting to GraphQL platform: {error.message}</div>;
-
-  // Success Confirmation Template state view switch block mapping
-  if (orderConfirmation) {
-    return (
-      <div style={{ maxWidth: '600px', margin: '80px auto', padding: '40px', textAlign: 'center', backgroundColor: '#fff', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.08)', fontFamily: 'sans-serif' }}>
-        <span style={{ fontSize: '64px' }}>🎉</span>
-        <h2 style={{ fontSize: '28px', marginTop: '16px', color: '#111827' }}>Thank You For Supporting Us!</h2>
-        <p style={{ color: '#4b5563', margin: '16px 0 32px' }}>Your virtual fundraiser order has been compiled and recorded.</p>
-        <div style={{ backgroundColor: '#f3f4f6', padding: '24px', borderRadius: '12px', display: 'inline-block' }}>
-          <span style={{ textTransform: 'uppercase', fontSize: '14px', letterSpacing: '1px', color: '#6b7280', display: 'block', marginBottom: '4px' }}>Your Pickup Confirmation Code</span>
-          <strong style={{ fontSize: '24px', color: '#111827', fontFamily: 'monospace' }}>{orderConfirmation}</strong>
-        </div>
-        <button onClick={() => window.location.reload()} style={{ marginTop: '40px', display: 'block', width: '100%', padding: '14px', background: '#000', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '600' }}>Order Again</button>
-      </div>
-    );
-  }
+  const cartTotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0).toFixed(2);
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#f9fafb', fontFamily: 'sans-serif', padding: '40px 20px' }}>
-      <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
+    <div style={{ 
+      backgroundColor: '#ffffff',
+      minHeight: '100vh',
+      padding: '60px 40px',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center'
+    }}>
+      
+      {/* HEADER LOGO CONTAINER - Rendering the Exact Asset */}
+      <div style={{ marginBottom: '50px', display: 'flex', justifyContent: 'center' }}>
+        <img 
+          src={logoAsset} 
+          alt="The Lemonade Stand Logo" 
+          style={{
+            width: '540px',   // Matches exact spec layout bounds
+            height: 'auto',   // Protects aspect ratio from stretching
+            display: 'block'
+          }} 
+        />
+      </div>
+
+      {/* CORE CONTENT LAYOUT GRID */}
+      <div style={{ 
+        display: 'grid', 
+        gridTemplateColumns: '1fr 300px', 
+        gap: '48px', 
+        width: '100%',
+        maxWidth: '1100px', 
+        alignItems: 'start',
+        marginTop: '20px'
+      }}>
         
-        {/* Dynamic header title structure branding banner layer matching image 1 */}
-        <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-          <div style={{ border: '4px solid #000', display: 'inline-block', padding: '16px 40px', backgroundColor: '#fff', textAlign: 'center' }}>
-            <h1 style={{ margin: 0, fontSize: '32px', letterSpacing: '4px', fontWeight: '800' }}>
-              THE <span style={{ color: '#eab308' }}>LEMONADE</span> STAND
-            </h1>
-          </div>
-        </div>
+        {/* Left Side Product Table Container */}
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #e5e7eb' }}>
+              <th style={{ padding: '12px 16px', width: '45%' }}></th>
+              <th style={{ padding: '12px 16px', textAlign: 'left', fontFamily: '"Georgia", serif', fontWeight: 'normal', color: '#6b7280', fontSize: '15px' }}>Price</th>
+              <th style={{ padding: '12px 16px', textAlign: 'center', fontFamily: '"Georgia", serif', fontWeight: 'normal', color: '#6b7280', fontSize: '15px', width: '100px' }}>QTY</th>
+              <th style={{ padding: '12px 16px', textAlign: 'left', fontFamily: '"Georgia", serif', fontWeight: 'normal', color: '#6b7280', fontSize: '15px' }}>Total</th>
+              <th style={{ padding: '12px 16px', width: '50px' }}></th>
+            </tr>
+          </thead>
+          <tbody>
+            {cart.map(item => (
+              <CartRow 
+                key={item.variantId}
+                item={item}
+                onUpdateQty={handleUpdateQty}
+                onDelete={handleDelete}
+              />
+            ))}
+          </tbody>
+        </table>
 
-        {/* Dual Flexible layout block splitting split table list configuration from form parameters */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 360px', gap: '32px', alignItems: 'start' }}>
+        {/* Right Side Summary Panel */}
+        <div style={{ 
+          backgroundColor: '#f9fafb', 
+          padding: '40px 24px',
+          border: '1px solid #e5e7eb',
+          borderRadius: '2px',
+          boxSizing: 'border-box'
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '36px' }}>
+            <span style={{ fontFamily: '"Georgia", serif', fontSize: '16px', color: '#000000' }}>Total</span>
+            <span style={{ fontFamily: '"Inter", sans-serif', fontSize: '16px', fontWeight: '700', color: '#000000' }}>$ {cartTotal}</span>
+          </div>
           
-          {/* Left Grid Layout Partition Card: Shopping Checkout Cart List Summary Table Wrapper */}
-          <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '24px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-              <thead>
-                <tr style={{ borderBottom: '2px solid #f3f4f6', color: '#6b7280', fontSize: '13px', textTransform: 'uppercase' }}>
-                  <th style={{ paddingBottom: '12px', fontWeight: '600' }}>Item</th>
-                  <th style={{ paddingBottom: '12px', fontWeight: '600' }}>Price</th>
-                  <th style={{ paddingBottom: '12px', fontWeight: '600' }}>Qty</th>
-                  <th style={{ paddingBottom: '12px', fontWeight: '600' }}>Total</th>
-                  <th style={{ paddingBottom: '12px' }}></th>
-                </tr>
-              </thead>
-              <tbody>
-                {cart.map(item => (
-                  <CartRow 
-                    key={item.variantId} 
-                    item={item} 
-                    onUpdateQty={handleUpdateQty} 
-                    onDelete={handleDelete} 
-                  />
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Right Grid Layout Partition Card: Customer Contact Pickup Verification Ledger Form */}
-          <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '24px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-            <h3 style={{ margin: '0 0 20px 0', fontSize: '18px', fontWeight: '600', color: '#111827' }}>Order Summary</h3>
-            
-            <form onSubmit={handleOrderSubmit}>
-              <div style={{ marginBottom: '16px' }}>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: '500', marginBottom: '6px', color: '#374151' }}>Full Name</label>
-                <input type="text" placeholder="John Doe" value={customer.name} onChange={e => setCustomer(prev => ({ ...prev, name: e.target.value }))} style={{ width: '100%', padding: '10px', boxSizing: 'border-box', border: '1px solid #d1d5db', borderRadius: '6px' }} />
-              </div>
-
-              <div style={{ marginBottom: '24px' }}>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: '500', marginBottom: '6px', color: '#374151' }}>Email or Phone Number</label>
-                <input type="text" placeholder="john@example.com" value={customer.contact} onChange={e => setCustomer(prev => ({ ...prev, contact: e.target.value }))} style={{ width: '100%', padding: '10px', boxSizing: 'border-box', border: '1px solid #d1d5db', borderRadius: '6px' }} />
-              </div>
-
-              {validationError && (
-                <div style={{ color: '#b91c1c', backgroundColor: '#fef2f2', padding: '10px', borderRadius: '6px', fontSize: '13px', marginBottom: '16px' }}>
-                  ⚠️ {validationError}
-                </div>
-              )}
-
-              <div style={{ display: 'flex', justifyContent: 'between', alignItems: 'center', borderTop: '1px solid #f3f4f6', paddingTop: '16px', marginBottom: '24px' }}>
-                <span style={{ fontSize: '16px', color: '#4b5563', flexGrow: 1 }}>Total Balance:</span>
-                <span style={{ fontSize: '24px', fontWeight: '700', color: '#111827' }}>${calculateTotal()}</span>
-              </div>
-
-              <button type="submit" disabled={submitting} style={{ width: '100%', padding: '14px', backgroundColor: '#000', color: '#fff', border: 'none', borderRadius: '6px', cursor: submitting ? 'not-allowed' : 'pointer', fontWeight: '600', fontSize: '15px' }}>
-                {submitting ? 'Processing Ledger Securely...' : 'Order Now'}
-              </button>
-            </form>
-          </div>
-
+          <button style={{
+            width: '100%',
+            backgroundColor: '#000000',
+            color: '#ffffff',
+            border: 'none',
+            padding: '14px 0',
+            fontFamily: '"Inter", sans-serif',
+            fontSize: '14px',
+            fontWeight: '700',
+            cursor: 'pointer',
+            borderRadius: '2px'
+          }}>
+            Order Now
+          </button>
         </div>
 
       </div>

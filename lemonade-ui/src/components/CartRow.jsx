@@ -1,62 +1,121 @@
 import React from 'react';
+// Import your hand-drawn lemon image asset
+import lemonImg from '../assets/lemon.png'; 
 
 export default function CartRow({ item, onUpdateQty, onDelete }) {
   const lineTotal = (item.price * item.quantity).toFixed(2);
+  const formattedPrice = item.price.toFixed(2);
 
   return (
-    <tr style={{ borderBottom: '1px solid #f3f4f6' }}>
-      <td style={{ padding: '16px 8px', display: 'flex', alignItems: 'center', gap: '16px' }}>
-        {/* Lemon Icon Circle placeholder matching mockup */}
-        <div style={{
-          width: '40px',
-          height: '40px',
-          borderRadius: '50%',
-          backgroundColor: '#fef08a',
-          border: '2px solid #000',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontWeight: 'bold',
-          fontSize: '20px'
-        }}>
-          🍋
-        </div>
-        <div>
-          <div style={{ fontWeight: '600', color: '#111827' }}>{item.productName}</div>
-          <div style={{ fontSize: '13px', color: '#6b7280' }}>{item.sizeName}</div>
+    <tr style={{ 
+      borderBottom: '1px solid #f3f4f6', 
+      backgroundColor: '#ffffff'
+    }}>
+      {/* Product Logo / Image Asset Cell */}
+      <td style={{ padding: '20px 8px', verticalAlign: 'middle' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
+          
+          {/* Displaying your exact hand-drawn lemon.png asset */}
+          <img 
+            src={lemonImg} 
+            alt="Lemon Product" 
+            style={{
+              width: '44px',
+              height: '44px',
+              objectFit: 'contain',
+              flexShrink: 0
+            }} 
+          />
+          
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+            <span style={{ fontWeight: '600', fontSize: '15px', color: '#000000' }}>
+              {item.productName}
+            </span>
+            <span style={{ fontSize: '14px', color: '#9ca3af', fontWeight: '400' }}>
+              {item.sizeName}
+            </span>
+          </div>
         </div>
       </td>
-      <td style={{ padding: '16px 8px', color: '#4b5563', verticalAlign: 'middle' }}>
-        ${item.price.toFixed(2)}
+
+      {/* Unit Price Column */}
+      <td style={{ padding: '20px 8px', color: '#000000', fontSize: '15px', fontWeight: '400', verticalAlign: 'middle' }}>
+        {formattedPrice}
       </td>
-      <td style={{ padding: '16px 8px', verticalAlign: 'middle' }}>
-        {/* QTY Control Box Block Layout */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+
+      {/* Square Edge Quantity Control Blocks */}
+      <td style={{ padding: '20px 8px', verticalAlign: 'middle', textAlign: 'center' }}>
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '12px' }}>
           <button 
             onClick={() => onUpdateQty(item.variantId, item.quantity - 1)}
-            style={{ width: '28px', height: '28px', border: '1px solid #d1d5db', background: '#fff', cursor: 'pointer', borderRadius: '4px' }}
+            style={{ 
+              width: '24px', 
+              height: '24px', 
+              border: '1px solid #000000',
+              background: '#ffffff', 
+              cursor: 'pointer', 
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '14px',
+              color: '#000000',
+              borderRadius: '0px',
+              padding: 0
+            }}
           >
             -
           </button>
-          <span style={{ minWidth: '16px', textAlign: 'center', fontWeight: '500' }}>{item.quantity}</span>
+          
+          <span style={{ fontWeight: '500', fontSize: '15px', color: '#000000', minWidth: '12px' }}>
+            {item.quantity}
+          </span>
+          
           <button 
             onClick={() => onUpdateQty(item.variantId, item.quantity + 1)}
-            style={{ width: '28px', height: '28px', border: '1px solid #d1d5db', background: '#fff', cursor: 'pointer', borderRadius: '4px' }}
+            style={{ 
+              width: '24px', 
+              height: '24px', 
+              border: '1px solid #000000',
+              background: '#ffffff', 
+              cursor: 'pointer', 
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '14px',
+              color: '#000000',
+              borderRadius: '0px',
+              padding: 0
+            }}
           >
             +
           </button>
         </div>
       </td>
-      <td style={{ padding: '16px 8px', fontWeight: '600', color: '#111827', verticalAlign: 'middle' }}>
-        ${lineTotal}
+
+      {/* Aggregate Row Total */}
+      <td style={{ padding: '20px 8px', fontWeight: '500', fontSize: '15px', color: '#000000', verticalAlign: 'middle' }}>
+        {lineTotal}
       </td>
-      <td style={{ padding: '16px 8px', verticalAlign: 'middle', textAlign: 'center' }}>
+
+      {/* Wireframe Trash Action SVG */}
+      <td style={{ padding: '20px 8px', verticalAlign: 'middle', textAlign: 'center' }}>
         <button 
           onClick={() => onDelete(item.variantId)}
-          style={{ background: 'none', border: 'none', color: '#9ca3af', cursor: 'pointer', fontSize: '16px' }}
-          title="Remove item"
+          style={{ 
+            background: 'none', 
+            border: 'none', 
+            color: '#000000', 
+            cursor: 'pointer', 
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '4px'
+          }}
         >
-          🗑️
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+          </svg>
         </button>
       </td>
     </tr>
