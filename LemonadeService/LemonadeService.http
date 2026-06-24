@@ -1,0 +1,6 @@
+@LemonadeService_HostAddress = http://localhost:5070
+
+GET {{LemonadeService_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
