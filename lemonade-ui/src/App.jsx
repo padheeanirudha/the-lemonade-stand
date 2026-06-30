@@ -27,36 +27,7 @@ export default function App() {
   const [activeOrderNumber, setActiveOrderNumber] = useState('');
 
   useEffect(() => {
-    async function syncCartWithDatabase() {
-      try {
-        const query = `
-          query GetCart {
-            cart {
-              variantId
-              productName
-              sizeName
-              price
-              quantity
-            }
-          }
-        `;
-        const response = await fetch(BACKEND_GRAPHQL_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ query })
-        });
-        const json = await response.json();
-        if (json.data && json.data.cart && json.data.cart.length > 0) {
-          setCart(json.data.cart);
-          localStorage.setItem('lemonade_customer_cart', JSON.stringify(json.data.cart));
-        }
-      } catch (err) {
-        console.warn("Backend unreachable. Using local storage fallback.");
-      } finally {
-        setLoading(false);
-      }
-    }
-    syncCartWithDatabase();
+    setLoading(false);
   }, []);
 
   const handleUpdateQty = async (variantId, newQty) => {
@@ -126,8 +97,8 @@ export default function App() {
 
     try {
       const mutation = `
-        mutation PlaceOrder($items: [CartItemInput!]!, $name: String!, $contact: String!) {
-          placeOrder(items: $items, customerName: $name, customerContact: $contact) { orderId success }
+        mutation PlaceOrder($items: [CartItemInput!]!) {
+          placeOrder(items: $items) { orderId success }
         }
       `;
       const inputItems = cart.map(item => ({ variantId: item.variantId, quantity: item.quantity }));
@@ -136,7 +107,7 @@ export default function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           query: mutation, 
-          variables: { items: inputItems, name: customerName, contact: customerContact } 
+          variables: { items: inputItems } 
         })
       });
       const json = await response.json();
